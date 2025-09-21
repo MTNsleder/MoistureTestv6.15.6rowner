@@ -1,0 +1,220 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><title>MoisterTest Owner</title><meta name=viewport content='width=device-width,initial-scale=1,viewport-fit=cover'><link rel=manifest href=manifest.json><link rel=apple-touch-icon href=apple-touch-icon.png><meta name=apple-mobile-web-app-capable content=yes><meta name=apple-mobile-web-app-status-bar-style content=black-translucent><meta name=theme-color content=#8b0a0a><style>
+:root{--red:#c03232;--pad:14px}*{box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;margin:0;background:#f7f3f3;color:#111}
+header{position:sticky;top:0;background:#fff;border-bottom:1px solid #e5e5e5;padding:calc(8px + env(safe-area-inset-top)) var(--pad) 8px;z-index:10;display:flex;justify-content:center}
+header h1{margin:0;font-size:18px}
+main{max-width:1120px;margin:0 auto;padding:12px var(--pad) 140px}
+fieldset{border:1px solid #e2c7c7;border-radius:12px;background:#fff;margin:12px 0;padding:10px}legend{font-weight:600;padding:0 8px;color:#7d1a1a}
+label{display:block;font-size:14px;margin:8px 0 6px}input,select,button{font-size:16px}
+input,select{width:100%;padding:10px;border:1px solid #d9b2b2;border-radius:10px;background:#fff}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.btn{display:block;width:100%;padding:12px;margin:6px 0 0;border:0;border-radius:12px;color:#fff;background:var(--red);cursor:pointer}
+.btn.gray{background:#888}.small{font-size:12px;color:#666}.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+.card{background:#fff;border:1px solid #ecd4d4;border-radius:12px;padding:12px}
+.hide{display:none}
+@media (max-width:520px){.row,.row3{grid-template-columns:1fr}}
+.note{margin-top:6px;color:#0b3c8a;font-size:12px}
+.warn{background:#fff9e6;border:1px solid #f4d06f;color:#8a6a00;border-radius:8px;padding:8px;margin-top:6px}
+.action{color:#0b3c8a;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.bin-card{border:1px solid #e9d0d0;border-radius:12px;padding:12px;background:#fff}
+.bin-title{font-weight:600;margin-bottom:6px}
+.bin-meta{font-size:14px;line-height:1.3;color:#333}
+.bin-actions{margin-top:8px;display:flex;gap:8px}
+.btn.sm{padding:8px;border-radius:10px;font-size:14px}
+</style></head><body><header><h1>MoisterTest Owner</h1></header><main>
+<fieldset><legend>Meter & Crop</legend>
+<div class=row3>
+  <div><label>Meter</label><select id=meter><option value=919 selected>919 (3.5")</option><option value=minigac>Mini‑GAC</option></select></div>
+  <div><label>Crop</label><select id=crop><option value=oats selected>Oats</option><option value=wheat>Wheat</option><option value=barley>Barley</option><option value=canola>Canola</option></select></div>
+  <div><label>Sample size (grams)</label><input id=grams type=number step=1 placeholder="auto-fills"></div>
+</div>
+<div id=gramsNote class=small></div>
+<div id=gramsWarn class="warn hide">Using a non‑factory sample size. Meter readings may not compare directly and can bias moisture. Use factory grams whenever possible.</div>
+</fieldset>
+
+<fieldset><legend>Inputs</legend>
+<div class=row3>
+  <div><label>Meter reading</label><input id=reading type=number step=0.1 inputmode=decimal></div>
+  <div><label>Grain temperature</label><div class=row>
+    <select id=tempUnit><option value=C selected>°C</option><option value=F>°F</option></select>
+    <input id=tempVal type=number step=0.1 inputmode=decimal>
+  </div></div>
+  <div><label>&nbsp;</label><button class=btn id=go>Calculate</button></div>
+</div>
+<div class=card id=result>Enter values and tap Calculate.</div>
+</fieldset>
+
+<fieldset><legend>Targets</legend>
+<div class=row>
+  <div><label>Target moisture for <b id=targetCropLabel>Oats</b> (%)</label>
+    <div class=row><input id=targetVal type=number step=0.1 inputmode=decimal><button class=btn id=saveTarget>Save</button></div>
+    <div class=small id=targetSaved></div>
+  </div>
+  <div>
+    <label>Quick reference</label>
+    <div id=targetsTable class=card style="max-height:220px;overflow:auto"></div>
+  </div>
+</div>
+</fieldset>
+
+<fieldset><legend>Bins/Bags</legend>
+<div class=row>
+  <div class=card>
+    <div class=row>
+      <select id=wbSelect></select>
+      <button class="btn" id=wbAddBin>+ Add bin</button>
+      <button class="btn gray" id=wbRename>Rename</button>
+      <button class="btn gray" id=wbDelete>Delete</button>
+      <button class="btn gray" id=wbClear>Clear</button>
+    </div>
+    <div class=row3 style="margin-top:8px">
+      <div><label>Entry mode</label><select id=entryMode><option value=truck selected>Truck fractions</option><option value=bushels>Bushels</option></select></div>
+      <div id=fractionBox><label>Truck fraction</label><select id=truckFrac><option value="1">1</option><option value="0.75">3/4</option><option value="0.5">1/2</option><option value="0.33">1/3</option><option value="0.25">1/4</option></select></div>
+      <div id=bushelsBox style="display:none"><label>Bushels</label><input id=wbBushels type=number step=1></div>
+    </div>
+    <div class=row3 style="margin-top:8px">
+      <div><label>Truck capacity by crop</label><select id=truckCrop><option value=oats selected>Oats</option><option value=wheat>Wheat</option><option value=barley>Barley</option><option value=canola>Canola</option></select></div>
+      <div><label>Capacity (bu)</label><input id=truckCap type=number step=1></div>
+      <div><label>&nbsp;</label><button class="btn gray" id=saveTruckCap>Save</button></div>
+    </div>
+    <div class=row style="margin-top:8px">
+      <button class=btn id=wbAddSample>Add sample to bin</button>
+      <button class="btn gray" id=wbManualAdd>Add manual log</button>
+    </div>
+    <div id=buPreview class=note></div>
+  </div>
+  <div class=card>
+    <div><b>Active bin:</b> <span id=wbName>—</span></div>
+    <div class=small style="margin-top:6px">Weighted avg: <b class=mono id=wbAvg>—</b>% • Total bu: <span class=mono id=wbTotal>0</span></div>
+    <div id=wbTable style="margin-top:8px;max-height:260px;overflow:auto"></div>
+  </div>
+</div>
+<div class=small id=binSyncMsg></div>
+</fieldset>
+
+<fieldset><legend>Team Sync</legend>
+<div class=row3>
+  <div><label>Enable</label><select id=syncEnable><option value=off>Off</option><option value=on selected>On</option></select></div>
+  <div><label>Farm ID</label><input id=farmId value="Rogers Sask"></div>
+  <div><label>Device name</label><input id=deviceName placeholder="Owner iPhone"></div>
+</div>
+<div class=row3>
+  <div><label>Endpoint URL</label><input id=endpoint value="https://script.google.com/macros/s/AKfycbxLMIUamQ6cITBx7kfwGw0z_Bs4CKH96_Y9_0GkpqyAAIWQxlhgS4NU2RFivxg77Ip9ig/exec"></div>
+  <div><label>Shared secret</label><input id=secret placeholder=""></div>
+  <div><label>Auto‑push</label><select id=autoPush><option value=off>Off</option><option value=on selected>On</option></select></div>
+</div>
+<div class=row><button class=btn id=pushNow>Push last sample</button><button class=btn id=pullNow>Pull dashboard</button></div>
+<div id=syncStatus class=small style="margin-top:6px;color:#0b3c8a"></div>
+<div id=teamDash class=card style="margin-top:8px"></div>
+</fieldset>
+</main>
+<script>
+function toast(msg,ms=1800){ var t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(function(){t.remove()}, ms); }
+function jget(k,d){ try{ return JSON.parse(localStorage.getItem(k)) ?? d }catch(e){ return d } }
+function jset(k,v){ localStorage.setItem(k, JSON.stringify(v)) }
+var presets={oats:[25,16.6,0.20,-0.10], wheat:[24,15.5,0.18,-0.07], barley:[24.5,15.8,0.19,-0.08], canola:[28,8.5,0.15,-0.06]};
+var gramsDefault={oats:200,wheat:250,barley:225,canola:250};
+var targetsDefault={oats:13.5,wheat:14.5,barley:14.5,canola:10.0};
+var defaultCaps={oats:2650, canola:1800, barley:1700, wheat:1500};
+function key(){ return (meter.value||'919')+'::'+(crop.value||'oats') }
+function gramsStore(){ return jget('grams',{}) } function gramsSave(o){ jset('grams',o) }
+function applyGramsDefault(){ var saved=gramsStore()[key()]; var def=gramsDefault[crop.value]; grams.value=(saved!==undefined && saved!=='')?saved:(def||''); gramsNote.textContent = def ? ('Factory sample for '+crop.value+': '+def+' g') : ''; showGramsWarning(); if (typeof targetCropLabel!=='undefined' && targetCropLabel) targetCropLabel.textContent=crop.options[crop.selectedIndex].text; if (typeof refreshTargetsTable==='function') refreshTargetsTable(); }
+function showGramsWarning(){ var def=gramsDefault[crop.value]; var val=parseFloat(grams.value); var warn=document.getElementById('gramsWarn'); if(!def||isNaN(val)||val===def){ warn.classList.add('hide'); } else { warn.classList.remove('hide'); } }
+if(grams){ grams.addEventListener('input',function(){ var g=gramsStore(); g[key()]=grams.value; gramsSave(g); showGramsWarning(); }); }
+if(meter){ meter.addEventListener('change',function(){ applyGramsDefault(); }); }
+if(crop){ crop.addEventListener('change',function(){ applyGramsDefault(); }); }
+var last=null; function r1(x){ return Number(x).toFixed(1) }
+function calcMoist(mr,tC,c){ var p=presets[c]; var M20=p[1]+(mr-p[0])*p[2]; return {M20:M20,noOff:(M20+(tC-20)*p[3])}; }
+if(go){ go.onclick=function(){ var mr=parseFloat(reading.value), t=parseFloat(tempVal.value); if(isNaN(mr)||isNaN(t)){ result.textContent='Enter both values.'; return; } var tC=(tempUnit.value==='F')?((t-32)*5/9):t; var base=calcMoist(mr,tC,crop.value); var corrected=base.noOff; var tgt=(jget('targets',{})[crop.value]??targetsDefault[crop.value]); var msg='Target '+r1(tgt)+'%'; var diff=corrected - tgt; if(Math.abs(diff)>=0.2) msg += (diff>0?(' • OVER by '+r1(diff)+'%'):(' • UNDER by '+r1(-diff)+'%')); result.innerHTML = '<div><b>'+r1(corrected)+'%</b> corrected moisture</div><div class=small>Base@20 °C '+r1(base.M20)+'%</div><div class=small style="margin-top:6px">'+msg+'</div>'; last={corrected:corrected, mr:mr, tC:tC}; }; }
+function getTargets(){ return jget('targets',{}) } function setTargets(t){ jset('targets',t) }
+function refreshTargetsTable(){ var all=getTargets(); var crops=['oats','wheat','barley','canola']; var rows=crops.map(function(c){ var name=c.charAt(0).toUpperCase()+c.slice(1); var v=(all[c]??targetsDefault[c]).toFixed(1); return '<tr><td>'+name+'</td><td class=mono>'+v+'%</td></tr>'; }).join(''); targetsTable.innerHTML='<table><thead><tr><th>Crop</th><th>Target %</th></tr></thead><tbody>'+rows+'</tbody></table>'; }
+if(saveTarget){ saveTarget.onclick=function(){ var v=parseFloat(targetVal.value); if(!(v>0)){ targetSaved.textContent='Enter a number'; return; } var all=getTargets(); all[crop.value]=v; setTargets(all); targetSaved.textContent='Saved.'; refreshTargetsTable(); setTimeout(function(){targetSaved.textContent=''},1600); if(last) go.click(); }; }
+function caps(){ return jget('truckCaps',{}) } function saveCaps(o){ jset('truckCaps',o) } function capFor(cr){ var c=caps(); return (c[cr]??defaultCaps[cr]??2000) }
+function refreshCapUI(){ if(typeof truckCap!=='undefined'&&truckCap){truckCap.value=capFor(truckCrop.value); updateBuPreview();} } if(truckCrop){ truckCrop.addEventListener('change',refreshCapUI); } window.addEventListener('DOMContentLoaded',refreshCapUI);
+if(saveTruckCap){ saveTruckCap.onclick=function(){ var v=parseFloat(truckCap.value); if(!(v>0)){ alert('Enter capacity'); return; } var c=caps(); c[truckCrop.value]=v; saveCaps(c); updateBuPreview(); alert('Saved'); }; }
+function currentBushels(){ if(entryMode.value==='bushels') return parseFloat(wbBushels.value)||0; var frac=parseFloat(truckFrac.value)||0; var cap=capFor(truckCrop.value); return Math.round(frac * cap); }
+function updateBuPreview(){ var bu=currentBushels(); if(entryMode.value==='bushels'){ buPreview.textContent = bu?('This will add ~'+bu.toFixed(0)+' bu.'):''; } else { var cap=capFor(truckCrop.value); var frac=parseFloat(truckFrac.value)||0; buPreview.textContent = frac?('Truck fraction × capacity ('+frac+' × '+cap+') → ~'+bu.toFixed(0)+' bu.'):''; } }
+if(entryMode){ entryMode.onchange=function(){ var m=entryMode.value; fractionBox.style.display=(m==='truck')?'block':'none'; bushelsBox.style.display=(m==='bushels')?'block':'none'; updateBuPreview(); }; }
+if(truckFrac){ truckFrac.addEventListener('change',updateBuPreview); }
+if(wbBushels){ wbBushels.addEventListener('input',updateBuPreview); }
+function wbStore(){ return jget('wetBins',{}) } function wbSave(s){ jset('wetBins',s) }
+function ensureDefaultBin(){ var s=wbStore(); if(!Object.keys(s).length){ s['Wet Bin 1']={samples:[]}; wbSave(s); } }
+function wbActive(){ return wbStore()[wbSelect.value]||{samples:[]} } function wbSetActive(d){ var s=wbStore(); s[wbSelect.value]=d; wbSave(s) }
+function wbRender(){ var b=wbActive(); var sum=0,total=0; (b.samples||[]).forEach(function(r){ sum+=Number(r.moisture||0)*Number(r.bu||0); total+=Number(r.bu||0) }); var avg=total?sum/total:null; if(wbAvg) wbAvg.textContent=avg?avg.toFixed(1):'—'; if(wbTotal) wbTotal.textContent=total||0; if(!b.samples||!b.samples.length){ wbTable.innerHTML='<div class=small>No samples.</div>'; return; } var rows='<table><thead><tr><th>time</th><th>crop</th><th>%</th><th>bu</th><th class=__OWNER_ONLY__>actions</th></tr></thead><tbody>'; b.samples.slice().reverse().forEach(function(r){ rows+='<tr><td>'+r.ts.slice(5,16).replace('T',' ')+'</td><td>'+(r.crop||'')+'</td><td>'+Number(r.moisture).toFixed(1)+'</td><td>'+Number(r.bu).toFixed(0)+'</td><td class=__OWNER_ONLY__><span class=action data-act=view data-id='+r.id+'>view</span> · <span class=action data-act=edit data-id='+r.id+'>edit</span> · <span class=action data-act=del data-id='+r.id+'>delete</span></td></tr>'; }); rows+='</tbody></table>'; wbTable.innerHTML=rows; Array.from(wbTable.querySelectorAll('.action')).forEach(function(a){ a.onclick=function(ev){ var id=ev.target.getAttribute('data-id'); var act=ev.target.getAttribute('data-act'); var data=wbActive(); var idx=(data.samples||[]).findIndex(function(x){return x.id===id;}); if(idx<0) return; if(act==='view'){ var e=data.samples[idx]; alert('Entry details:\nTime: '+e.ts+'\nCrop: '+(e.crop||'')+'\nMoisture: '+e.moisture+'%\nBushels: '+e.bu+'\nSource: '+(e.source||'')); } if(act==='del'){ if(!confirm('Delete entry?')) return; data.samples.splice(idx,1); wbSetActive(data); wbRender(); } if(act==='edit'){ var e=data.samples[idx]; var mo=prompt('Moisture %', e.moisture); if(mo===null) return; var bu=prompt('Bushels', e.bu); if(bu===null) return; e.moisture=parseFloat(mo)||0; e.bu=parseFloat(bu)||0; data.samples[idx]=e; wbSetActive(data); wbRender(); } }; }); }
+if(wbAddSample){ wbAddSample.onclick=function(){ wbAddCurrent(true) }; } if(wbManualAdd){ wbManualAdd.onclick=function(){ wbAddCurrent(false) }; }
+function wbAddCurrent(calcBased){ var bu=currentBushels(); if(!(bu>0)){ alert('Enter bushels or pick a fraction'); return; } var moist=null; if(calcBased){ if(!last){ alert('Calculate first'); return; } moist=last.corrected; } else { var mo=prompt('Moisture %:'); if(mo===null) return; moist=parseFloat(mo)||0; } var b=wbActive(); b.samples.push({id:crypto.randomUUID(), ts:new Date().toISOString(), moisture:moist, bu:bu, crop:crop.value, source:calcBased?'calc':'manual'}); wbSetActive(b); wbRender(); if (typeof maybeAutoPush==='function') maybeAutoPush(bu, moist); }
+</script>
+
+<script>
+function lastBinKey(){ return 'lastBin::owner'; }
+function wbRefresh(){
+  ensureDefaultBin(); var s=wbStore(); wbSelect.innerHTML='';
+  Object.keys(s).forEach(function(n){ var o=document.createElement('option'); o.value=n; o.textContent=n; wbSelect.appendChild(o); });
+  var saved=jget(lastBinKey(),null); if(saved && s[saved]) wbSelect.value=saved; wbName.textContent=wbSelect.value; wbRender();
+}
+if(wbSelect){ wbSelect.onchange=function(){ wbName.textContent=wbSelect.value; jset(lastBinKey(), wbSelect.value); wbRender(); }; }
+
+if(wbAddBin){ wbAddBin.onclick=function(){ var s=wbStore(); var name=prompt('New bin/bag name:','Wet Bin '+(Object.keys(s).length+1)); if(!name)return; if(s[name]){alert('Exists');return;} s[name]={samples:[]}; wbSave(s); jset(lastBinKey(), name); wbRefresh(); pushBinsList(); }; }
+if(wbRename){ wbRename.onclick=function(){ var s=wbStore(); var old=wbSelect.value; var name=prompt('Rename bin/bag', old); if(!name||name===old) return; if(s[name]){alert('That name exists');return;} s[name]=s[old]; delete s[old]; wbSave(s); jset(lastBinKey(), name); wbSelect.value=name; wbRefresh(); pushBinsList(); }; }
+if(wbDelete){ wbDelete.onclick=function(){ var s=wbStore(); var name=wbSelect.value; if(!confirm('Delete "'+name+'"? (entries will be removed)')) return; delete s[name]; if(!Object.keys(s).length) s['Wet Bin 1']={samples:[]}; wbSave(s); jset(lastBinKey(), Object.keys(wbStore())[0]); wbRefresh(); pushBinsList(); }; }
+if(wbClear){ wbClear.onclick=function(){ if(!confirm('Clear all entries in '+wbSelect.value+'?')) return; var s=wbStore(); s[wbSelect.value]={samples:[]}; wbSave(s); wbRender(); }; }
+
+function sget(){return jget('syncSettings',null)} function sset(v){jset('syncSettings',v)}
+function syncLoad(){
+  var s=sget(); if(!s){ s={on:true, farmId:'Rogers Sask', device:'', url:'https://script.google.com/macros/s/AKfycbxLMIUamQ6cITBx7kfwGw0z_Bs4CKH96_Y9_0GkpqyAAIWQxlhgS4NU2RFivxg77Ip9ig/exec', secret:'', auto:true}; sset(s);}
+  syncEnable.value=s.on?'on':'off'; farmId.value=s.farmId||''; deviceName.value=s.device||''; endpoint.value=s.url||''; secret.value=s.secret||''; autoPush.value=s.auto?'on':'off';
+}
+function syncSave(){ sset({on:syncEnable.value==='on', farmId:farmId.value.trim(), device:deviceName.value.trim(), url:endpoint.value.trim(), secret:secret.value.trim(), auto:(autoPush.value==='on')}); }
+[syncEnable,farmId,deviceName,endpoint,secret,autoPush].forEach(function(el){ if(el) el.addEventListener('change',syncSave); });
+
+async function push(payload){
+  var s=sget(); if(!s.on){syncStatus.textContent='Sync OFF'; return null;} if(!s.url||!s.farmId){syncStatus.textContent='Set URL & Farm ID'; return null;}
+  try{ var resp=await fetch(s.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}); var js=await resp.json(); return js; }
+  catch(e){ syncStatus.textContent='Push failed: '+e; return null; }
+}
+function pushBinsList(){
+  var list=Object.keys(wbStore()); push({action:'setBins', farmId:(sget().farmId||''), secret:(sget().secret||''), bins:list}).then(function(js){ binSyncMsg.textContent=(js&&js.ok)?'Bins updated ✓':'Bins update failed'; });
+}
+async function pullBinsList(){
+  var s=sget(); if(!s.on) return; if(!s.url||!s.farmId) return;
+  try{ var resp=await fetch(s.url+'?action=getBinsList&farmId='+encodeURIComponent(s.farmId)+'&secret='+(s.secret||'')); var js=await resp.json();
+    if(js && Array.isArray(js.bins)){ var cur=wbStore(); var snew={}; js.bins.forEach(function(n){snew[n]=cur[n] || {'samples':[]}}); jset('wetBins',snew); wbRefresh(); binSyncMsg.textContent='Bins refreshed ✓'; }
+  }catch(e){ }
+}
+if(pullNow){ pullNow.onclick=function(){ pullDashboard(); pullBinsList(); }; }
+
+async function pullDashboard(){
+  var s=sget(); if(!s.on) return; if(!s.url||!s.farmId) return;
+  try{ var resp=await fetch(s.url+'?action=getBins&farmId='+encodeURIComponent(s.farmId)+'&secret='+(s.secret||'')); var js=await resp.json();
+    var bins=js.bins||{}; var html='<div class=grid>';
+    Object.keys(bins).forEach(function(name){
+      var b=bins[name];
+      html += '<div class=bin-card>'
+            +   '<div class=bin-title>'+name+'</div>'
+            +   '<div class=bin-meta>Avg: <b class=mono>'+Number(b.avg||0).toFixed(1)+'%</b><br>Total: <span class=mono>'+(b.total||0)+'</span> bu</div>'
+            +   '<div class=bin-actions>'
+            +     '<button class="btn sm" data-bin="'+name+'" data-act=empty>Empty</button>'
+            +     '<button class="btn sm gray" data-bin="'+name+'" data-act=refresh>Refresh</button>'
+            +   '</div>'
+            + '</div>';
+    });
+    html+='</div>';
+    teamDash.innerHTML = html || '<span class=small>No bins yet.</span>'; syncStatus.textContent='Pulled ✓';
+    Array.from(teamDash.querySelectorAll('button[data-act]')).forEach(function(btn){ btn.onclick=function(){ handleDashAction(btn); }; });
+  }catch(e){ syncStatus.textContent='Pull failed'; }
+}
+
+async function handleDashAction(btn){
+  var act=btn.getAttribute('data-act'); var bin=btn.getAttribute('data-bin'); if(!act||!bin) return;
+  if(act==='refresh'){ pullDashboard(); return; }
+  if(act==='empty'){
+    if(!confirm('Empty "'+bin+'" on the server dashboard?')) return;
+    var js=await push({action:'emptyBin', farmId:(sget().farmId||''), secret:(sget().secret||''), bin:bin});
+    if(js && js.ok){ toast('Emptied '+bin); pullDashboard(); pullBinsList(); } else { toast('Empty failed'); }
+  }
+}
+
+window.addEventListener('DOMContentLoaded',function(){ applyGramsDefault(); wbRefresh(); refreshTargetsTable(); syncLoad(); });
+</script>
+</html>
